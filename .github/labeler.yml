@@ -1,0 +1,29 @@
+documentation:
+  - changed-files:
+    - any-glob-to-any-file:
+        - '**/*.md'
+        - 'LICENSE.txt'
+
+feature:
+  - head-branch: ['^feature', 'feature']
+
+release:
+  - all:
+    - base-branch: 'master'
+    - head-branch: ['^release', 'release']
+
+devcontainer:
+  - changed-files:
+    - any-glob-to-any-file:
+        - '.devcontainer/**/*'
+
+source:
+  - changed-files:
+    - any-glob-to-any-file:
+        - 'bible_circle.py'
+        - 'requirements.txt'
+
+ci:
+  - changed-files:
+    - any-glob-to-any-file:
+        - '.github/**/*'
