@@ -5,18 +5,20 @@ its cross-references: the 66 Bible books arranged around a ring, every marginal 
 drawn as a chord through the circle, coloured by source book, with **Old↔New Testament links
 highlighted**. Inspired by the "All Prophecies about Jesus" arc diagram, bent into a circle.
 
-It is a single script — re-download a Bible update and rerun it to regenerate everything.
+It is a single self-contained binary (written in Rust) — download a Bible update and rerun it to
+regenerate everything. No runtime, no system libraries.
 
 [![License](https://img.shields.io/github/license/Team-MaRo/jw-bible-crossref-graph)](LICENSE.txt)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa)][code-of-conduct]
 
-![preview](bible_circle_sm.png)
+![preview](docs/bible_circle_sm.png)
 
-*(Above is the small `bible_circle_sm.png` thumbnail — the full `bible_circle.png` is 300 dpi.)*
+*(Above is the committed `docs/bible_circle_sm.png` thumbnail, produced by `--formats png-sm`; the
+full `bible_circle.png` is 300 dpi. To refresh it, regenerate and copy the output into `docs/`.)*
 
 ## What you get
 
-Running the script produces these files (next to the input `.jwpub`). Each one corresponds to a
+Running the tool produces these files (next to the input `.jwpub`). Each one corresponds to a
 `--formats` name (in parentheses):
 
 | File | Description |
@@ -28,21 +30,42 @@ Running the script produces these files (next to the input `.jwpub`). Each one c
 | `bible_crossrefs.csv` | Every cross-reference as readable verse refs (e.g. `Jes 7:14 → Mat 1:23`) (`csv`) |
 | `nwtsty_X.db` | The Bible's SQLite database, extracted from the `.jwpub` (`db`) |
 
-## Prerequisites
+## Install
 
-- **Python 3.8+** (developed/tested on 3.14)
-- **matplotlib** — the only third-party library:
-  ```bash
-  pip install -r requirements.txt   # or: pip install matplotlib
-  ```
-- A **Study Bible `.jwpub` file** (see below).
+### Download a release binary (recommended)
 
-### Don't want Python on your host?
+Grab the right binary for your platform from the [**Releases**][releases] page and put it on your
+`PATH`. Assets are named:
 
-This repo ships a [dev container](.devcontainer/devcontainer.json). Open the folder in
-**VS Code** and choose **"Reopen in Container"** (Dev Containers extension), or open it in
-**GitHub Codespaces**. The container is a Python 3.14 image with `matplotlib` installed
-automatically — drop your `.jwpub` into the folder and jump straight to [Step 2](#step-2--run-the-script).
+```
+jw-bible-crossref-graph-{linux|darwin|windows}-{amd64|arm64}{-gnu|-musl}{.exe}
+```
+
+For example: `jw-bible-crossref-graph-linux-amd64-musl` (static Linux build),
+`jw-bible-crossref-graph-darwin-arm64` (Apple Silicon), or
+`jw-bible-crossref-graph-windows-amd64.exe`. GitHub shows each asset's SHA-256 digest next to it.
+
+On Linux/macOS, mark it executable:
+
+```bash
+chmod +x jw-bible-crossref-graph-*
+```
+
+### Build from source
+
+Needs a [Rust toolchain](https://rustup.rs) (stable):
+
+```bash
+cargo install --git https://github.com/Team-MaRo/jw-bible-crossref-graph
+# ...or, in a clone:
+cargo build --release        # binary at target/release/jw-bible-crossref-graph
+```
+
+### Don't want Rust on your host?
+
+This repo ships a [dev container](.devcontainer/devcontainer.json). Open the folder in **VS Code**
+and choose **"Reopen in Container"** (Dev Containers extension), or open it in **GitHub
+Codespaces** — a Rust image with everything ready. Then `cargo run --release -- nwtsty_X.jwpub`.
 
 ## Step 1 — Get the Bible file
 
@@ -54,29 +77,27 @@ How to obtain it:
 1. Go to **<https://www.jw.org/de/bibliothek/bibel/>** (jw.org → Bibliothek → Bibel).
 2. Open the **Studienausgabe** (Study Bible) and use the **download / Herunterladen** option,
    choosing the **JWPUB** format. Only the *study* edition contains the cross-references this
-   script needs — the regular reading edition does not.
-3. Save the downloaded `nwtsty_X.jwpub` into this folder, next to `bible_circle.py`.
+   tool needs — the regular reading edition does not.
+3. Save the downloaded `nwtsty_X.jwpub` somewhere; the outputs are written next to it.
 
 (Alternatively, the free **JW Library** desktop app stores downloaded publications as `.jwpub`
 files in its app-data folder, where the study Bible is likewise named `nwtsty_X.jwpub`.)
 
-> Any future `nwtsty` `.jwpub` update works — and the script also accepts any other NWT `.jwpub`
+> Any future `nwtsty` `.jwpub` update works — and the tool also accepts any other NWT `.jwpub`
 > edition that includes cross-references. The regular (non-study) Bible, and the EPUB/PDF/RTF
 > downloads, do **not** contain the cross-reference data and will not work.
 
 No password or decryption is required: the `.jwpub` is just a zip-within-a-zip around a plain
-SQLite database, which the script reads directly.
+SQLite database, which the tool reads directly.
 
-## Step 2 — Run the script
-
-From this folder:
+## Step 2 — Run it
 
 ```bash
 # point it at the file explicitly
-python bible_circle.py nwtsty_X.jwpub
+jw-bible-crossref-graph nwtsty_X.jwpub
 
-# ...or let it auto-find the first *.jwpub in this folder
-python bible_circle.py
+# ...or let it auto-find the first *.jwpub in the current directory
+jw-bible-crossref-graph
 ```
 
 You'll see progress for each stage (extracting the database, loading ~65,600 cross-references,
@@ -87,18 +108,18 @@ writing the CSV, rendering the SVG/PNG, building the HTML). When it finishes, op
 
 | Flag | Default | Description |
 | --- | --- | --- |
-| `--lang {de,en}` | `de` | Language for book names, labels, titles, the HTML UI and the CSV headers. See the note below — this only relabels the graphic. |
+| `--lang <de\|en>` | `de` | Language for book names, labels, titles, the HTML UI and the CSV headers. See the note below — this only relabels the graphic. |
 | `--formats <list>` | `all` | Comma-separated subset of `db,csv,svg,png,png-sm,html` (or `all`). Produce only what you need. |
 
 ```bash
 # English labels, only the interactive viewer + README thumbnail
-python bible_circle.py --lang en --formats html,png-sm
+jw-bible-crossref-graph --lang en --formats html,png-sm
 
-# just the small thumbnail (fast — skips the 9.5 MB PNG and 16 MB SVG)
-python bible_circle.py --formats png-sm
+# just the small thumbnail (fast — skips the big PNG and SVG)
+jw-bible-crossref-graph --formats png-sm
 ```
 
-> **Note on `--lang`:** the `.jwpub` only supplies verse *numbers*, so the script applies all book
+> **Note on `--lang`:** the `.jwpub` only supplies verse *numbers*, so the tool applies all book
 > names and text itself. `--lang en` therefore relabels everything in English (e.g. `Isa 7:14 → Mt
 > 1:23`) regardless of which edition's `.jwpub` you feed in; it does not translate any actual Bible
 > text.
@@ -114,10 +135,12 @@ Open **`bible_circle.html`** in any modern browser:
 
 ## Customising the look
 
-All settings live in the `CFG` dictionary at the top of `bible_circle.py` — gap sizes between
-books, the Gospel-bracket spacing, chord curvature, line opacity/width, colours, image size/DPI,
-and the small-thumbnail size budget. Language text and book names live in the `STRINGS` table just
-below `CFG`. Edit and rerun. See [AGENTS.md](AGENTS.md) for details.
+The geometry/style knobs live in the `cfg` module at the top of [`src/bible.rs`](src/bible.rs) —
+gap sizes between books, the Gospel-bracket spacing, chord curvature, line opacity/width, image
+size/DPI, and the small-thumbnail byte budget. Language text and book names live in per-language
+YAML files in [`i18n/`](i18n) (e.g. [`i18n/de.yaml`](i18n/de.yaml)), embedded into the binary at
+build time. To add a language, drop in `i18n/<code>.yaml` and add a matching `Lang` variant in
+[`src/strings.rs`](src/strings.rs). Edit and rebuild. See [AGENTS.md](AGENTS.md) for details.
 
 ## Notes
 
@@ -131,13 +154,15 @@ below `CFG`. Edit and rerun. See [AGENTS.md](AGENTS.md) for details.
 
 Please read [CONTRIBUTING.md][contributing] for details on our code of conduct and the process for submitting pull requests.
 
-This project uses [Conventional Commits](https://www.conventionalcommits.org/).
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) — releases are
+automated from the commit history.
 
 ## Versioning
 
-This project is **not versioned** — there are no releases, tags, or version numbers. It's a single
-self-contained script that you re-run against the latest Bible `.jwpub` to regenerate the output.
-Just use the latest state of `master`.
+We use [SemVer](https://semver.org/). Releases are automated with
+[release-please](https://github.com/googleapis/release-please): merging the generated release PR
+tags a version (e.g. `1.2.3`, no `v` prefix) and publishes binaries to the
+[Releases][releases] page. See the [tags][gh-tags] for available versions.
 
 ## Authors
 
@@ -163,8 +188,15 @@ This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.t
 
 ## Acknowledgments
 
-This project currently uses no third-party libraries or copied code.
+- Built with [clap](https://github.com/clap-rs/clap), [rusqlite](https://github.com/rusqlite/rusqlite),
+  [zip](https://github.com/zip-rs/zip2), and [resvg / usvg / tiny-skia](https://github.com/linebender/resvg)
+  for SVG→PNG rendering.
+- Ring/title text uses a sans-serif font from your system (Arial, Helvetica, DejaVu Sans, … —
+  whichever is installed); no font is bundled. On a host with no fonts the labels are simply
+  omitted (the chords and rim arcs still render).
 
+[releases]: https://github.com/Team-MaRo/jw-bible-crossref-graph/releases
+[gh-tags]: https://github.com/Team-MaRo/jw-bible-crossref-graph/tags
 [gh-contributors]: https://github.com/Team-MaRo/jw-bible-crossref-graph/contributors
 [contributing]: https://github.com/Team-MaRo/.github/blob/master/CONTRIBUTING.md
 [code-of-conduct]: https://github.com/Team-MaRo/.github/blob/master/CODE_OF_CONDUCT.md

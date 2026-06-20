@@ -1,4 +1,4 @@
-# --- Generated output (recreated by running bible_circle.py) ---
+# --- Generated output (recreated by running the tool) ---
 *.svg
 *.csv
 *.html
@@ -6,29 +6,10 @@
 *.jwpub
 # Renders are regenerated; the only committed image is the small README preview.
 *.png
-!bible_circle_sm.png
+!docs/bible_circle_sm.png
 
-# --- Python ---
-__pycache__/
-*.py[cod]
-*$py.class
-.Python
-
-# Virtual environments
-.venv/
-venv/
-env/
-ENV/
-
-# Packaging / build artifacts
-build/
-dist/
-*.egg-info/
-.eggs/
-
-# Tooling caches
-.ruff_cache/
-.mypy_cache/
-.pytest_cache/
+# --- Rust ---
+/target
+# Cargo.lock IS committed (this is a binary/app) — do not ignore it.
 
 CLAUDE.md

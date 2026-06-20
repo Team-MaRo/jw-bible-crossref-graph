@@ -17,7 +17,7 @@ updates:
       time: '09:30'
       timezone: Europe/Zurich
 
-  - package-ecosystem: pip
+  - package-ecosystem: cargo
     directory: /
     labels:
       - "dependabot :robot:"
@@ -26,6 +26,14 @@ updates:
       day: monday
       time: '09:30'
       timezone: Europe/Zurich
+    # Keep the resvg/usvg/tiny-skia/fontdb set bumped together (matched versions).
+    groups:
+      resvg:
+        patterns:
+          - "resvg"
+          - "usvg"
+          - "tiny-skia"
+          - "fontdb"
 
   - package-ecosystem: devcontainers
     directory: /
