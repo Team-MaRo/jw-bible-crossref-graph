@@ -9,6 +9,18 @@ version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
+    target-branch: develop
+    labels:
+      - "dependabot :robot:"
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:30'
+      timezone: Europe/Zurich
+
+  - package-ecosystem: devcontainers
+    directory: /
+    target-branch: develop
     labels:
       - "dependabot :robot:"
     schedule:
@@ -19,6 +31,7 @@ updates:
 
   - package-ecosystem: cargo
     directory: /
+    target-branch: develop
     labels:
       - "dependabot :robot:"
     schedule:
@@ -34,13 +47,3 @@ updates:
           - "usvg"
           - "tiny-skia"
           - "fontdb"
-
-  - package-ecosystem: devcontainers
-    directory: /
-    labels:
-      - "dependabot :robot:"
-    schedule:
-      interval: weekly
-      day: monday
-      time: '09:30'
-      timezone: Europe/Zurich
