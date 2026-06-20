@@ -111,9 +111,11 @@ pub fn build_svg(bible: &Bible, draw_text: bool) -> String {
     for b in &bible.books {
         let (x0, y0) = (r * b.a0.to_radians().cos(), r * b.a0.to_radians().sin());
         let (x1, y1) = (r * b.a1.to_radians().cos(), r * b.a1.to_radians().sin());
+        // sweep-flag 0: after the y-negation, this is the arc centred on the
+        // origin (sweep 1 picks the mirror-centred circle and bows the wrong way).
         let _ = write!(
             s,
-            r##"<path d="M{:.4},{:.4} A{:.4},{:.4} 0 0 1 {:.4},{:.4}" fill="none" stroke="{}" stroke-width="{:.5}"/>"##,
+            r##"<path d="M{:.4},{:.4} A{:.4},{:.4} 0 0 0 {:.4},{:.4}" fill="none" stroke="{}" stroke-width="{:.5}"/>"##,
             x0, -y0, r, r, x1, -y1, colors[b.idx], RIM_W
         );
     }
