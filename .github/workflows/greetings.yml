@@ -1,0 +1,25 @@
+name: Greetings
+
+on:
+  pull_request:
+    types:
+      - opened
+  issues:
+    types:
+      - opened
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  greeting:
+    name: Greet First-Time Contributors
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Greet First-Time Contributors
+        uses: actions/first-interaction@v3
+        with:
+          issue_message: "Thank you for taking the courage of creating an issue here for the first time. We can't see everything, so this project heavily depends on people like you."
+          pr_message: "Thank you for taking your precious time to create a pull request on this repository for the first time. Your work might actually benefit many others."

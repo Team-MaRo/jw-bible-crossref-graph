@@ -1,0 +1,48 @@
+name: Dependabot Auto-Merge
+
+on:
+  pull_request:
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  auto-merge:
+    name: Auto-Merge Dependabot PRs
+    runs-on: ubuntu-latest
+
+    # Checking the actor will prevent your Action run failing on non-Dependabot PRs
+    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == 'Team-MaRo/jw-bible-crossref-graph'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Fetch Dependabot metadata 🔍
+        uses: dependabot/fetch-metadata@v3
+        id: metadata
+        with:
+          github-token: ${{ github.token }}
+
+      - name: Approve Dependabot PR if not already approved ✅
+        if: steps.metadata.outputs.update-type == 'version-update:semver-minor' || steps.metadata.outputs.update-type == 'version-update:semver-patch'
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          gh pr checkout "$PR_URL" # sets the upstream metadata for `gh pr status`
+          if [ "$(gh pr status --json reviewDecision -q .currentBranch.reviewDecision)" != "APPROVED" ]; then
+            gh pr review --approve "$PR_URL"
+          else
+            echo "PR already approved, skipping additional approvals to minimize emails/notification noise."
+          fi
+
+      - name: Enable auto-merge for Dependabot PR 🪄
+        if: steps.metadata.outputs.update-type == 'version-update:semver-minor' || steps.metadata.outputs.update-type == 'version-update:semver-patch'
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          # PAT (not GITHUB_TOKEN) so the resulting merge commit can fire
+          # downstream workflows (the default token's merges don't).
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        run: gh pr merge --auto --merge "$PR_URL"

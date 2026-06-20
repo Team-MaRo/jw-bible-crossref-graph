@@ -1,0 +1,29 @@
+name: Mark stale issues and pull requests
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+
+permissions:
+  actions: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    name: Mark stale issues and PRs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Mark stale issues and PRs
+        uses: actions/stale@v10
+        with:
+          stale-issue-message: "Stale issue"
+          stale-pr-message: "Stale pull request"
+          close-issue-message: "Stale issue closed"
+          close-pr-message: "Stale pull request closed"
+          stale-issue-label: "no-issue-activity"
+          exempt-issue-labels: "awaiting-approval,work-in-progress"
+          stale-pr-label: "no-pr-activity"
+          exempt-pr-labels: "awaiting-approval,work-in-progress"
+          only-labels: "awaiting-feedback,awaiting-answers"

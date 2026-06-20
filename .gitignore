@@ -1,0 +1,33 @@
+# --- Generated output (recreated by running bible_circle.py) ---
+# Note: bible_circle.png is intentionally committed as the README preview,
+# so *.png is NOT ignored here.
+*.svg
+*.csv
+*.html
+*.db
+*.jwpub
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Packaging / build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Tooling caches
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+
+CLAUDE.md
