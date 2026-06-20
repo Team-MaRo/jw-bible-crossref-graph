@@ -1,15 +1,15 @@
 {
+  // Build and run this project without installing Rust on the host.
+  // Open the folder in VS Code and "Reopen in Container", or use GitHub
+  // Codespaces / the `devcontainer` CLI. Dependencies are fetched on create.
   "name": "jw-bible-crossref-graph",
-  "image": "mcr.microsoft.com/devcontainers/python:3.14-bookworm",
-  "postCreateCommand": "pip install --user -r requirements.txt",
+  "image": "mcr.microsoft.com/devcontainers/rust:1-bookworm",
+  "postCreateCommand": "cargo fetch",
   "customizations": {
     "vscode": {
       "extensions": [
-        "ms-python.python"
-      ],
-      "settings": {
-        "python.defaultInterpreterPath": "/usr/local/bin/python"
-      }
+        "rust-lang.rust-analyzer"
+      ]
     }
   }
 }
