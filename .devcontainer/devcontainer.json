@@ -3,8 +3,17 @@
   // Open the folder in VS Code and "Reopen in Container", or use GitHub
   // Codespaces / the `devcontainer` CLI. Dependencies are fetched on create.
   "name": "jw-bible-crossref-graph",
+
   "image": "mcr.microsoft.com/devcontainers/rust:1-bookworm",
+
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "configureZshAsDefaultShell": true
+    }
+  },
+
   "postCreateCommand": "cargo fetch",
+
   "customizations": {
     "vscode": {
       "extensions": [

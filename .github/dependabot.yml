@@ -17,6 +17,10 @@ updates:
       day: monday
       time: '09:30'
       timezone: Europe/Zurich
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
   - package-ecosystem: devcontainers
     directory: /
@@ -28,6 +32,10 @@ updates:
       day: monday
       time: '09:30'
       timezone: Europe/Zurich
+    groups:
+      devcontainers:
+        patterns:
+          - "*"
 
   - package-ecosystem: cargo
     directory: /
@@ -47,3 +55,7 @@ updates:
           - "usvg"
           - "tiny-skia"
           - "fontdb"
+      cargo-non-breaking:
+        update-types:
+          - minor
+          - patch
