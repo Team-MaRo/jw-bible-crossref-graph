@@ -42,7 +42,7 @@ jobs:
           - { name: windows-amd64,    os: windows-latest, target: x86_64-pc-windows-msvc,     cross: false, ext: .exe }
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
