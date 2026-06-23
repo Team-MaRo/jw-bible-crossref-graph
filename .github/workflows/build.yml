@@ -1,0 +1,94 @@
+name: Build
+
+# Per-arch release build of the binary. On pushes/PRs it's a smoke build that
+# catches release-only breakage early; on a release tag (cut by release.yml via
+# the GH_PAT, so the tag push actually fires this workflow) it attaches the
+# platform binaries to the GitHub Release.
+#
+# `cross` carries the target C toolchain that bundled SQLite needs for the linux
+# gnu/musl + aarch64 builds. macOS/Windows build natively with cargo.
+
+on:
+  push:
+    branches: [master]
+    tags: ['*.*.*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write # attach assets to the release on tag builds
+  id-token: write # provenance attestation
+  attestations: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: linux-amd64-gnu,  os: ubuntu-latest,  target: x86_64-unknown-linux-gnu,   cross: true }
+          - { name: linux-amd64-musl, os: ubuntu-latest,  target: x86_64-unknown-linux-musl,  cross: true }
+          - { name: linux-arm64-gnu,  os: ubuntu-latest,  target: aarch64-unknown-linux-gnu,  cross: true }
+          - { name: linux-arm64-musl, os: ubuntu-latest,  target: aarch64-unknown-linux-musl, cross: true }
+          # Native Intel build: macos-13 is retired (queues forever → 24h await-runner
+          # timeout); macos-15-intel is the current x86_64 hosted runner.
+          - { name: darwin-amd64,     os: macos-15-intel, target: x86_64-apple-darwin,        cross: false }
+          - { name: darwin-arm64,     os: macos-latest,   target: aarch64-apple-darwin,       cross: false }
+          - { name: windows-amd64,    os: windows-latest, target: x86_64-pc-windows-msvc,     cross: false, ext: .exe }
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install cross
+        if: matrix.cross
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cross
+
+      - name: Build (cross)
+        if: matrix.cross
+        run: cross build --release --target ${{ matrix.target }}
+
+      - name: Build (cargo)
+        if: ${{ !matrix.cross }}
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Stage asset
+        shell: bash
+        run: |
+          bin="jw-bible-crossref-graph${{ matrix.ext }}"
+          asset="jw-bible-crossref-graph-${{ matrix.name }}${{ matrix.ext }}"
+          cp "target/${{ matrix.target }}/release/$bin" "$asset"
+
+      - name: Attest build provenance
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: jw-bible-crossref-graph-${{ matrix.name }}${{ matrix.ext }}
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: jw-bible-crossref-graph-${{ matrix.name }}
+          path: jw-bible-crossref-graph-${{ matrix.name }}${{ matrix.ext }}
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Attach binary to the release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          asset="jw-bible-crossref-graph-${{ matrix.name }}${{ matrix.ext }}"
+          gh release upload "${GITHUB_REF_NAME}" "$asset" --clobber

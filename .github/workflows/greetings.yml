@@ -16,6 +16,7 @@ jobs:
   greeting:
     name: Greet First-Time Contributors
     runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]'
 
     steps:
       - name: Greet First-Time Contributors
