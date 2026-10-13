@@ -27,4 +27,4 @@ serde_json = "1.0.150"
 serde_yaml_ng = "0.10.0"
 tiny-skia = "0.12.0"
 usvg = "0.48.1"
-zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
+zip = { version = "9.0.0", default-features = false, features = ["deflate"] }
